@@ -9,6 +9,7 @@
 #include <TFile.h>
 #include <TArrayF.h>
 #include <TH1.h>
+#include <TMarker.h>
 #include <TH2.h>
 #include <TF1.h>
 #include <TLegend.h>
@@ -137,8 +138,20 @@ int main(int argc, char** argv){
 			cout<<x<<"   "<<y<<"     "<<Traccia.GetRadius()<<endl;
 			ltest->SetLineWidth(2);
 			ltest->SetLineColor(kRed);
+			Traccia.Barycenter(x,y);
+			double trash=0;
+			double phi=Traccia.AngleLineMaxRMS(trash);
+			TMarker m(x,y,20);
+			m.SetMarkerColor(kBlack);
+			m.SetMarkerSize(2);
+			TF1 *mainline=new TF1("mainline","tan([0])*(x-[1])+[2]",0,250);
+			mainline->SetParameters(phi,x,y);
+			mainline->SetLineWidth(2);
+			mainline->SetLineColor(kBlue);
 			test->Draw("colz");
 			ltest->Draw("same");
+			m.Draw("same");
+			mainline->Draw("same");
 			c1->Write();
 			
 			counter++;

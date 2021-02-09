@@ -30,6 +30,8 @@ class Analyzer {
 	void Reset();
 	void SavetoFile(const char* nometh2);
 	void Barycenter(double &XBar, double &YBar);
+	double AngleLineMaxRMS(double &RMSOnLineVal);
+	double RMSOnLine(double XBar, double YBar, double Phi);
 //	void Analyze(double percrad)
 
 	private:

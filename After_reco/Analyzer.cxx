@@ -9,7 +9,7 @@
 #include <TH2F.h>
 
 //ClassImp(Analyzer)
-
+double RMSOnLine(double XBar, double YBar, double Phi);
 
 //costruttore di default
 Analyzer::Analyzer():
@@ -212,35 +212,69 @@ void Analyzer::Barycenter(double &XBar, double &YBar)
 
 
 //Find main line (maximize RMS on this line)
-double Analyzer::AngleLineMaxRMS(Int_t B, Int_t E, double* X, double* Y, double* Q,double XBar, double YBar,double* RMSOnLineVal)
+double Analyzer::AngleLineMaxRMS(double &RMSOnLineVal)			//RMSOnLineVal is currently useless in thin code but seems useful for Samuele's code
 {
-
+  double XBar,YBar;
   double Sum1=0;
   double Sum2=0;
+  double Z=0.;
   double Phi;
   double RmsAng;
   double RmsAngPerp;
   
-  for(int i=B; i<E;i++){
-    Sum1+= Q[i]*(X[i]-XBar)*(Y[i]-YBar);
-    Sum2+= Q[i]*( (Y[i]-YBar)*(Y[i]-YBar) - (X[i]-XBar)*(X[i]-XBar)  );
+  Barycenter(XBar,YBar);
+  
+  for(int i=1;i<fnpixelx;i++)
+  {
+	for(int j=1;j<fnpixely;j++)
+	{  
+	  Z=fTrack->GetBinContent(i,j);
+	  if(Z!=0)
+	  {
+		  Sum1+= Z*(i-XBar)*(j-YBar);
+		  Sum2+= Z*( (j-YBar)*(j-YBar) - (i-XBar)*(i-XBar)  );
+	  }
+	}
   }
 
   Phi=-0.5*TMath::ATan(2*Sum1/Sum2);
   
-  RmsAng=RMSOnLine(B,E,X,Y,Q,XBar,YBar,Phi);
-  RmsAngPerp=RMSOnLine(B,E,X,Y,Q,XBar,YBar,Phi+TMath::Pi()/2);
+  RmsAng=RMSOnLine(XBar,YBar,Phi);
+  RmsAngPerp=RMSOnLine(XBar,YBar,Phi+TMath::Pi()/2);
   
-  if( RmsAng > RmsAngPerp ){
-    *RMSOnLineVal=RmsAng;
-    return Phi;
-  } else {
-    *RMSOnLineVal=RmsAngPerp;
-    if(Phi+TMath::Pi()/2>TMath::Pi()/2){
-      return Phi+TMath::Pi()/2-TMath::Pi();
-    } else{
-      return Phi+TMath::Pi()/2;
-    }
+  if( RmsAng > RmsAngPerp )
+  {  
+      RMSOnLineVal=RmsAng;
+      return Phi;
+  } 
+  else 
+  {
+      RMSOnLineVal=RmsAngPerp;
+      if(Phi+TMath::Pi()/2>TMath::Pi()/2)     return Phi+TMath::Pi()/2-TMath::Pi();
+      else     return Phi+TMath::Pi()/2;
   }
   
+}
+//Called by AngleLineMaxRMS
+double Analyzer::RMSOnLine(double XBar, double YBar, double Phi)
+{
+  double RMS=0;
+  double ChargeTot=0;
+  double Z=0.;
+
+
+  for(int i=1;i<fnpixelx;i++)
+  {
+	for(int j=1;j<fnpixely;j++)
+	{  
+	  Z=fTrack->GetBinContent(i,j);
+	  if(Z!=0)
+	  {
+		  RMS+= Z*( (i-XBar)*cos(Phi) + (j-YBar)*sin(Phi) )*( (i-XBar)*cos(Phi) + (j-YBar)*sin(Phi) );
+		  ChargeTot+=Z;
+	  }
+	}
+  }
+  
+  return RMS/=ChargeTot;
 }
