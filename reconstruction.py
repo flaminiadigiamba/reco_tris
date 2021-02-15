@@ -321,16 +321,16 @@ if __name__ == '__main__':
             
     setattr(options,'pedfile_fullres_name', 'pedestals/pedmap_run%s_rebin1.root' % (options.pedrun))
     
-    options.tmpname = "../RecoMango/data/New/histograms_Run%05d.root" % int(options.run)
+    #options.tmpname = "../RecoMango/data/New/histograms_Run%05d.root" % int(options.run)
 
-   # USER = os.environ['USER']
-    #tmpdir = '/mnt/ssdcache/' if os.path.exists('/mnt/ssdcache/') else '/tmp/'
-    #os.system('mkdir -p {tmpdir}/{user}'.format(tmpdir=tmpdir,user=USER))
-    #if sw.checkfiletmp(int(options.run)):
-    #    options.tmpname = "%s/%s/histograms_Run%05d.root" % (tmpdir,USER,int(options.run))
-    #else:
-    #    print ('Downloading file: ' + sw.swift_root_file(options.tag, int(options.run)))
-    #    options.tmpname = sw.swift_download_root_file(sw.swift_root_file(options.tag, int(options.run)),int(options.run))
+    USER = os.environ['USER']
+    tmpdir = '/mnt/ssdcache/' if os.path.exists('/mnt/ssdcache/') else '/tmp/'
+    os.system('mkdir -p {tmpdir}/{user}'.format(tmpdir=tmpdir,user=USER))
+    if sw.checkfiletmp(int(options.run)):
+        options.tmpname = "%s/%s/histograms_Run%05d.root" % (tmpdir,USER,int(options.run))
+    else:
+        print ('Downloading file: ' + sw.swift_root_file(options.tag, int(options.run)))
+        options.tmpname = sw.swift_download_root_file(sw.swift_root_file(options.tag, int(options.run)),int(options.run))
     
     if options.justPedestal:
         ana = analysis(options)
